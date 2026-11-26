@@ -180,23 +180,37 @@ sudo reboot
 
 ### 3. Prepare the Camera
 
-Camera nodes are renumbered on every boot, so `setup_cameras.sh` must be run
+Camera nodes are renumbered on every boot, so `gem-camera-setup` must be run
 **once after each reboot**. It configures the CSI receiver and binds the IMX219
 sensor to the right format. Skip it and the app fails with
 `Could not get allowed GstCaps of device`.
 
 ```bash
-sudo su
-source /opt/t3-edgeai-env
-bash /opt/edgeai-gst-apps/scripts/setup_cameras.sh
+sudo gem-camera-setup
 ```
 
-The script prints the camera it found and the node it assigned. If the IMX219
+It prints the camera it found and the node it assigned:
+
+```text
+IMX219 Camera 0 detected
+device = /dev/video-imx219-cam0
+name = imx219
+format = [fmt:SRGGB8_1X8/1920x1080]
+subdev_id = /dev/v4l-imx219-subdev0
+isp_required = yes
+```
+
+`device` must match the `source` line in `configs/tracking.yaml`. If the IMX219
 does not appear, check the ribbon cable before starting the app.
 
 ### 4. Run the App
 
+The app needs a root shell with the Edge AI environment loaded. Do not run it
+with `sudo`.
+
 ```bash
+sudo su
+source /opt/t3-edgeai-env
 cd /home/gemstone/t3-gemstone-o1-object-tracker/apps_python
 ./app_edgeai.py ../configs/tracking.yaml -n
 ```
@@ -414,7 +428,7 @@ the model cannot name.
 | Symptom | Cause | Fix |
 |---|---|---|
 | `ModuleNotFoundError: edgeai_dl_inferer` | Environment not loaded, or run under `sudo` | `sudo su` → `source /opt/t3-edgeai-env`, do not use `sudo` |
-| `Could not get allowed GstCaps of device` | `setup_cameras.sh` not run after a reboot | Run the script again |
+| `Could not get allowed GstCaps of device` | `gem-camera-setup` not run after a reboot | Run it again |
 | Init looks clean, then a silent `APP: Deinit` | Another process is holding the camera | `pgrep -a -f app_edgeai.py` |
 | Hangs at `MEM: Init` / `IPC: Init` | A previous process was `kill -9`ed, TIOVX is wedged | Reboot |
 | No coordinate lines printed | The ncurses performance table owns the terminal | Run with `-n` |
@@ -447,7 +461,7 @@ docs/
     coordinates.svg        dx / dy diagram
 ```
 
-Camera setup uses `/opt/edgeai-gst-apps/scripts/setup_cameras.sh`; no copy is
+Camera setup uses `/usr/local/bin/gem-camera-setup` on the board; no copy is
 kept in this repository.
 
 ---

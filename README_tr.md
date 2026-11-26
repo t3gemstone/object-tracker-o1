@@ -182,23 +182,38 @@ sudo reboot
 
 ### 3. Kamerayı Hazırlayın
 
-Kamera düğümleri her açılışta yeniden numaralandığı için `setup_cameras.sh`
-betiği **her yeniden başlatmadan sonra bir kez** çalıştırılmalıdır. Betik CSI
+Kamera düğümleri her açılışta yeniden numaralandığı için `gem-camera-setup`
+komutu **her yeniden başlatmadan sonra bir kez** çalıştırılmalıdır. Komut CSI
 alıcısını yapılandırır ve IMX219 sensörünü doğru formata bağlar. Bu adım
 atlanırsa uygulama `Could not get allowed GstCaps of device` hatası verir.
 
 ```bash
-sudo su
-source /opt/t3-edgeai-env
-bash /opt/edgeai-gst-apps/scripts/setup_cameras.sh
+sudo gem-camera-setup
 ```
 
-Betik, bulduğu kamerayı ve atadığı düğümü ekrana yazar. Çıktıda kameranız
-görünmüyorsa uygulamayı çalıştırmadan önce kablo bağlantısını kontrol edin.
+Komut, bulduğu kamerayı ve atadığı düğümü ekrana yazar:
+
+```text
+IMX219 Camera 0 detected
+device = /dev/video-imx219-cam0
+name = imx219
+format = [fmt:SRGGB8_1X8/1920x1080]
+subdev_id = /dev/v4l-imx219-subdev0
+isp_required = yes
+```
+
+`device` değeri `configs/tracking.yaml` dosyasındaki `source` satırıyla aynı
+olmalıdır. Çıktıda kameranız görünmüyorsa uygulamayı çalıştırmadan önce kablo
+bağlantısını kontrol edin.
 
 ### 4. Uygulamayı Çalıştırın
 
+Uygulama, Edge AI ortamı yüklenmiş bir root kabuğunda çalışmalıdır. `sudo` ile
+çalıştırmayın.
+
 ```bash
+sudo su
+source /opt/t3-edgeai-env
 cd /home/gemstone/t3-gemstone-o1-object-tracker/apps_python
 ./app_edgeai.py ../configs/tracking.yaml -n
 ```
@@ -436,7 +451,7 @@ etmeniz gerekirse anlamlıdır.
 | Belirti | Sebep | Çözüm |
 |---|---|---|
 | `ModuleNotFoundError: edgeai_dl_inferer` | Ortam yüklenmemiş ya da uygulama `sudo` ile çalıştırılmış | `sudo su` komutundan sonra `source /opt/t3-edgeai-env` çalıştırın, `sudo` kullanmayın |
-| `Could not get allowed GstCaps of device` | Yeniden başlatmadan sonra `setup_cameras.sh` çalıştırılmamış | Betiği tekrar çalıştırın |
+| `Could not get allowed GstCaps of device` | Yeniden başlatmadan sonra `gem-camera-setup` çalıştırılmamış | Komutu tekrar çalıştırın |
 | İnit temiz geçiyor, sonra sessizce `APP: Deinit` | Kamerayı başka bir süreç tutuyor | `pgrep -a -f app_edgeai.py` ile süreci bulun |
 | `MEM: Init` ya da `IPC: Init` satırında takılıyor | Önceki süreç `kill -9` ile öldürülmüş, TIOVX kilitli | Kartı yeniden başlatın |
 | Koordinat satırları basılmıyor | ncurses performans tablosu açık | Uygulamayı `-n` bayrağıyla çalıştırın |
@@ -469,7 +484,7 @@ docs/
     coordinates_tr.svg     dx ve dy şeması
 ```
 
-Kamera kurulumu için `/opt/edgeai-gst-apps/scripts/setup_cameras.sh` betiği
+Kamera kurulumu için karttaki `/usr/local/bin/gem-camera-setup` komutu
 kullanılır, bu depoda kopyası tutulmaz.
 
 ---
