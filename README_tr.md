@@ -2,7 +2,7 @@
     <picture>
         <source media="(prefers-color-scheme: dark)" srcset="docs/logo-dark.png" width="40%" />
         <source media="(prefers-color-scheme: light)" srcset="docs/logo-light.png" width="40%" />
-        <img alt="T3 Vakfı" src="docs/logo-light.png" width="40%" />
+        <img alt="T3 Gemstone" src="docs/logo-light.png" width="40%" />
     </picture>
 </p>
 
